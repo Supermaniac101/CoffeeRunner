@@ -64,6 +64,14 @@ public class GameManager : MonoBehaviour {
         levelText.text = "You endured all the stress for " + level + "days.";
         levelImage.SetActive(true);
         enabled = false;
+        Destroy(gameObject);
+        instance = null;
+        Invoke("HideLevelImage", 4f);
+        
+    }
+
+    public void GoToGameover()
+    {
         SceneManager.LoadScene("GameOverScene");
     }
 
