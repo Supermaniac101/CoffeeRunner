@@ -16,7 +16,10 @@ public class Player : MovingObject {
     private int energy;
     private Vector2 touchOrigin = Vector2.one;
 
-
+    public AudioClip Walk;
+    public AudioClip Hit;
+    public AudioClip Pickup;
+    public AudioClip NextLevel;
 
     protected override void Start()
     {
@@ -72,7 +75,7 @@ public class Player : MovingObject {
 
         if (horizontal != 0 || vertical != 0)
         {
-            AttemptMove<Enemy>(horizontal, vertical);
+            AttemptMove<Wall>(horizontal, vertical);
         }
     }
 
@@ -81,6 +84,7 @@ public class Player : MovingObject {
         if(other.tag == "Exit")
         {
             Invoke("Restart", restartLevelDelay);
+            SoundManager.instance.PlaySingle(NextLevel);
             enabled = false;
         }
         else if(other.tag == "Food")
@@ -88,6 +92,7 @@ public class Player : MovingObject {
             energy += pointsPerSmall;
             animator.SetTrigger("playerDrink");
             energyText.text = "+" + pointsPerSmall + " ENERGY: " + energy;
+            SoundManager.instance.RandomizeSfx(Pickup);
             other.gameObject.SetActive(false);
         }
         else if (other.tag == "Soda")
@@ -95,6 +100,7 @@ public class Player : MovingObject {
             energy += pointsPerBig;
             animator.SetTrigger("playerDrink");
             energyText.text = "+" + pointsPerBig + " ENERGY: " + energy;
+            SoundManager.instance.RandomizeSfx(Pickup);
             other.gameObject.SetActive(false);
         }
     }
@@ -104,18 +110,18 @@ public class Player : MovingObject {
         animator.SetTrigger("playerHit");
         energy -= loss;
         energyText.text = "-" + loss + " ENERGY: " + energy;
+        SoundManager.instance.RandomizeSfx(Hit);
         CheckIfGameOver();
     }
 
     protected override void OnCantMove<T>(T component)
     {
-        //TODO: Add logic
-        //Wall hitWall = component as Wall;
+        Wall hitWall = component as Wall;
     }
 
     private void Restart()
     {
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     protected override void AttemptMove<T>(int xDir, int yDir)
@@ -124,6 +130,10 @@ public class Player : MovingObject {
         energyText.text = "ENERGY: " + energy;
         base.AttemptMove<T>(xDir, yDir);
         RaycastHit2D hit;
+        if (Move(xDir, yDir, out hit))
+        {
+            SoundManager.instance.RandomizeSfx(Walk);
+        }
         CheckIfGameOver();
         GameManager.instance.playersTurn = false;
     }

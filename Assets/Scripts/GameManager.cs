@@ -15,10 +15,11 @@ public class GameManager : MonoBehaviour {
 
     private Text levelText;
     private GameObject levelImage;
-    private int level = 0;
+    private int level = 1;
     private List<Enemy> enemies;
     private bool enemiesMoving;
     private bool doingSetup;
+    private GameObject restartButton;
 
     private void Awake()
     {
@@ -33,20 +34,29 @@ public class GameManager : MonoBehaviour {
         InitGame();
     }
 
-    private void OnLevelWasLoaded(int level)
+    void Start()
     {
-        
-        InitGame();
+        SceneManager.sceneLoaded += delegate (Scene scene, LoadSceneMode mode)
+        {
+            level++;
+            InitGame();
+        };
     }
+
+    //private void OnLevelWasLoaded(int level)
+    //{
+    //    InitGame();
+    //}
 
     void InitGame()
     {
         doingSetup = true;
-        level++;
+        restartButton = GameObject.Find("Startbutton");
         levelImage = GameObject.Find("LevelImage");
         levelText = GameObject.Find("LevelText").GetComponent<Text>();
         levelText.text = "Day " + level;
         levelImage.SetActive(true);
+        restartButton.SetActive(false);
         Invoke("HideLevelImage", levelStartDelay);
 
         enemies.Clear();
@@ -61,13 +71,13 @@ public class GameManager : MonoBehaviour {
 
     public void GameOver()
     {
-        levelText.text = "You endured all the stress for " + level + "days.";
         levelImage.SetActive(true);
+        levelText.text = "You lasted " + level + " days.";
         enabled = false;
+        restartButton.SetActive(true);
+        playerEnergyPoints = 100;
+        level = 1;
         Destroy(gameObject);
-        instance = null;
-        Invoke("HideLevelImage", 4f);
-        
     }
 
     public void GoToGameover()
