@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
     public BoardManager boardScript;
     public int playerEnergyPoints = 100;
     [HideInInspector] public bool playersTurn = true;
+    private bool firstRun = true;
 
     private Text levelText;
     private GameObject levelImage;
@@ -34,19 +35,43 @@ public class GameManager : MonoBehaviour {
         InitGame();
     }
 
-    void Start()
-    {
-        SceneManager.sceneLoaded += delegate (Scene scene, LoadSceneMode mode)
-        {
-            level++;
-            InitGame();
-        };
-    }
+    //void Start()
+    //{
+    //    SceneManager.sceneLoaded += delegate (Scene scene, LoadSceneMode mode)
+    //    {
+    //        level++;
+    //        InitGame();
+    //    };
+    //}
 
     //private void OnLevelWasLoaded(int level)
     //{
     //    InitGame();
     //}
+
+    void OnEnable()
+    {
+        //Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
+        SceneManager.sceneLoaded += OnLevelFinishedLoading;
+    }
+
+    void OnDisable()
+    {
+        //Tell our 'OnLevelFinishedLoading' function to stop listening for a scene change as soon as this script is disabled. Remember to always have an unsubscription for every delegate you subscribe to!
+        SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+    }
+
+    void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
+    {
+        if (firstRun)
+        {
+            firstRun = false;
+            return;
+        }
+
+        level++;
+        InitGame();
+    }
 
     void InitGame()
     {
@@ -73,16 +98,11 @@ public class GameManager : MonoBehaviour {
     {
         levelImage.SetActive(true);
         levelText.text = "You lasted " + level + " days.";
+        level = 1;
+        playerEnergyPoints = 100;
         enabled = false;
         restartButton.SetActive(true);
-        playerEnergyPoints = 100;
-        level = 1;
         Destroy(gameObject);
-    }
-
-    public void GoToGameover()
-    {
-        SceneManager.LoadScene("GameOverScene");
     }
 
     // Update is called once per frame
